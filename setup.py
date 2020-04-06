@@ -7,7 +7,7 @@ setup(
     author_email="saulzar@gmail.com",
     description="Python structs and tables using dot notation",
     url="https://github.com/saulzar/structs",
-    packages=setuptools.find_packages(),
+    packages=find_namespace_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

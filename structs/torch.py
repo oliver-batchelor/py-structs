@@ -9,7 +9,7 @@ import math
 import operator
 import itertools
 
-import from .struct import struct, Struct, transpose_structs
+from .struct import struct, Struct, transpose_structs
 
 
 
