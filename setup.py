@@ -1,8 +1,8 @@
 from setuptools import setup, find_namespace_packages
 setup(
 
-    name="structs",
-    version="0.0.1",
+    name="py-structs",
+    version="0.0.3",
     author="Oliver Batchelor",
     author_email="saulzar@gmail.com",
     description="Python structs and tables using dot notation",
