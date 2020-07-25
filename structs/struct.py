@@ -400,6 +400,15 @@ def transpose_dict_lists(d):
     return r    
 
 
+def transpose_list_dicts(xs):
+    r = {}
+    for d in xs:
+        for k, v in d.items():
+            inner = r.get(k) or []
+            inner.append(v)
+            r[k] = inner
+    return r    
+
 
 def add_dict(d, k):
     d[k] = d[k] + 1 if k in d else 1
