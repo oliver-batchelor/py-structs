@@ -8,8 +8,9 @@ import math
 
 import operator
 import itertools
+from functools import partial
 
-from .struct import struct, Struct, transpose_structs
+from .struct import struct, Struct, transpose_structs, map_type
 
 
 class Table(Struct):
@@ -174,48 +175,14 @@ class Histogram:
         else:
             return 0
 
+def map_arrays(data, f, *args, **kwargs):
+    return map_type(data, partial(f, *args, **args), np.ndarray)  
 
 def shape_info(x):
-
-    if isinstance(x, np.ndarray):
-        return tuple([*x.shape, type(x), x.dtype])
-    elif type(x) == list:
-        return list(map(shape_info, x))
-    elif type(x) == tuple:
-        return tuple(map(shape_info, x))
-    elif isinstance(x, Mapping):
-        return {k : shape_info(v) for k, v in x.items()}
-    else:
-        return x
+    return map_arrays(x, lambda x: tuple([*x.shape, type(x), x.dtype]))
 
 def shape(x):
-    if isinstance(x, np.ndarray):
-        return tuple(x.shape)
-    elif type(x) == list:
-        return list(map(shape, x))
-    elif type(x) == tuple:
-        return tuple(map(shape, x))
-    elif isinstance(x, Mapping):
-        return {k : shape(v) for k, v in x.items()}
-    else:
-        return x    
-
-
-
-def map_arrays(t, f, *args, **kwargs):
-    def rec(x):
-        if isinstance(x, np.ndarray):
-            return f(x, *args, **kwargs)
-        elif type(x) == list:
-            return list(map(rec, x))
-        elif type(x) == tuple:
-            return tuple(map(rec, x))
-        elif isinstance(x, Mapping):
-            return x.__class__({k : rec(v) for k, v in x.items()})
-        else:
-            return x
-            
-    return rec(t)
+    return map_arrays(x, lambda x: tuple(x.shape))
 
 def arrays_astype(t, **kwargs):
     return map_arrays(t, np.ndarray.astype, **kwargs)        
