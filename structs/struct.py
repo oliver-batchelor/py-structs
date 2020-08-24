@@ -1,6 +1,6 @@
 from typing import List
 from collections import Counter
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 import numpy as np
 
 from numbers import Number
@@ -312,20 +312,9 @@ def transpose_structs(structs):
     return Struct(d) 
 
 
-def split_table(table, splits):
-    split = {k: v.split(splits) for k, v in table.items()}
-
-    def build_table(i):
-        return Table({k : v[i] for k, v in split.items()})
-
-    return [build_table(i) for i in range(len(splits))]
-
-
 
 def transpose_lists(lists):
     return list(zip(*lists))
-
-
 
 
 def drop_while(f, xs):
@@ -440,3 +429,31 @@ def partition_by(xs, f):
         append_dict(partitions, k, v)    
 
     return partitions
+
+
+def map_type(data, type, f, *args, **kwargs):
+    def rec(x):
+        
+        if isinstance(x, type):
+            return f(x, *args, **kwargs)
+       
+        elif isinstance(x, Sequence):
+            return x.__class__(map(rec, x))
+        elif isinstance(x, Mapping):
+            return x.__class__({k : rec(v) for k, v in x.items()})
+        else:
+            return x
+            
+    return rec(data)
+
+def traverse_type(data, type, f, *args, **kwargs):
+    def rec(x):   
+        if isinstance(x, type):
+            f(x, *args, **kwargs)
+        elif isinstance(x, Sequence):
+            map(rec, x)
+        elif isinstance(x, Mapping):
+            for v in x.values():
+                rec(v) 
+            
+    rec(data)

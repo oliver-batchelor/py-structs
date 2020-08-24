@@ -1,6 +1,6 @@
 from typing import List
 from collections import Counter
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 import torch
 import numpy as np
@@ -11,8 +11,7 @@ import math
 import operator
 import itertools
 
-from .struct import struct, Struct, transpose_structs
-
+from .struct import struct, Struct, transpose_structs, map_type
 
 
 class Table(Struct):
@@ -101,8 +100,6 @@ def table(**d):
     return Table(d)
 
 
-
-
 class Histogram:
     def __init__(self, values = torch.FloatTensor(0), range = (0, 1), num_bins = 10, trim = True):
         assert len(range) == 2
@@ -180,53 +177,23 @@ class Histogram:
             return 0
 
 
-def shape_info(x):
+def map_tensors(data, f, *args, **kwargs):
+    return map_type(data, partial(f, *args, **args), torch.Tensor)  
 
-    if type(x) == torch.Tensor:
-        return tuple([*x.size(), x.dtype, x.device])
-    if isinstance(x, np.ndarray):
-        return tuple([*x.shape, type(x), x.dtype])
-    elif type(x) == list:
-        return list(map(shape_info, x))
-    elif type(x) == tuple:
-        return tuple(map(shape_info, x))
-    elif isinstance(x, Mapping):
-        return {k : shape_info(v) for k, v in x.items()}
-    else:
-        return x
+def shape_info(x):
+    return map_arrays(x, lambda x: tuple([*x.shape, type(x), x.dtype]))
 
 def shape(x):
-    if type(x) == torch.Tensor:
-        return tuple(x.shape)
-    if isinstance(x, np.ndarray):
-        return tuple(x.shape)
-    elif type(x) == list:
-        return list(map(shape, x))
-    elif type(x) == tuple:
-        return tuple(map(shape, x))
-    elif isinstance(x, Mapping):
-        return {k : shape(v) for k, v in x.items()}
-    else:
-        return x    
+    return map_arrays(x, lambda x: tuple(x.shape))
 
 
+def from_numpy(data):
+    return map_type(data, torch.Tensor.from_numpy, np.ndarray)  
 
-def map_tensors(t, f, *args, **kwargs):
-    def rec(x):
-        if type(x) == torch.Tensor:
-            return f(x, *args, **kwargs)
-        if isinstance(x, np.ndarray):
-            return f(torch.from_numpy(x), *args, **kwargs)
-        elif type(x) == list:
-            return list(map(rec, x))
-        elif type(x) == tuple:
-            return tuple(map(rec, x))
-        elif isinstance(x, Mapping):
-            return x.__class__({k : rec(v) for k, v in x.items()})
-        else:
-            return x
-            
-    return rec(t)
+def to_numpy(data):
+    return map_type(data, torch.Tensor.numpy, torch.Tensor)  
+
+
 
 def tensors_to(t, **kwargs):
     return map_tensors(t, Tensor.to, **kwargs)        
@@ -239,3 +206,12 @@ def stack_tables(tables, dim=0):
 def cat_tables(tables, dim=0):
     t = transpose_structs(tables)
     return Table(dict(t._map(torch.cat, dim=dim))) 
+
+
+def split_table(table, splits):
+    split = {k: v.split(splits) for k, v in table.items()}
+
+    def build_table(i):
+        return Table({k : v[i] for k, v in split.items()})
+
+    return [build_table(i) for i in range(len(splits))]
