@@ -176,7 +176,7 @@ class Histogram:
             return 0
 
 def map_arrays(data, f, *args, **kwargs):
-    return map_type(data, partial(f, *args, **args), np.ndarray)  
+    return map_type(data,  np.ndarray, partial(f, *args, **kwargs))  
 
 def shape_info(x):
     return map_arrays(x, lambda x: tuple([*x.shape, type(x), x.dtype]))

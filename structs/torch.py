@@ -178,7 +178,7 @@ class Histogram:
 
 
 def map_tensors(data, f, *args, **kwargs):
-    return map_type(data, partial(f, *args, **args), torch.Tensor)  
+    return map_type(data, torch.Tensor, partial(f, *args, **args))  
 
 def shape_info(x):
     return map_arrays(x, lambda x: tuple([*x.shape, type(x), x.dtype]))
@@ -188,10 +188,10 @@ def shape(x):
 
 
 def from_numpy(data):
-    return map_type(data, torch.Tensor.from_numpy, np.ndarray)  
+    return map_type(data, np.ndarray, torch.Tensor.from_numpy)  
 
 def to_numpy(data):
-    return map_type(data, torch.Tensor.numpy, torch.Tensor)  
+    return map_type(data, torch.Tensor, torch.Tensor.numpy)  
 
 
 
