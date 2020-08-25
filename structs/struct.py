@@ -431,10 +431,10 @@ def partition_by(xs, f):
     return partitions
 
 
-def map_type(data, type, f, *args, **kwargs):
+def map_type(data, data_type, f, *args, **kwargs):
     def rec(x):
         
-        if isinstance(x, type):
+        if isinstance(x, data_type):
             return f(x, *args, **kwargs)
        
         elif isinstance(x, Sequence):
@@ -446,12 +446,14 @@ def map_type(data, type, f, *args, **kwargs):
             
     return rec(data)
 
-def traverse_type(data, type, f, *args, **kwargs):
+def traverse_type(data, data_type, f, *args, **kwargs):
     def rec(x):   
-        if isinstance(x, type):
+
+        if isinstance(x, data_type):
             f(x, *args, **kwargs)
         elif isinstance(x, Sequence):
-            map(rec, x)
+            for v in x:
+                rec(v)
         elif isinstance(x, Mapping):
             for v in x.values():
                 rec(v) 
