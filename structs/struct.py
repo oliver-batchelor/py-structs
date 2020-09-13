@@ -436,7 +436,8 @@ def map_type(data, data_type, f, *args, **kwargs):
         
         if isinstance(x, data_type):
             return f(x, *args, **kwargs)
-       
+        elif isinstance(x, str):
+            return x
         elif isinstance(x, Sequence):
             return x.__class__(map(rec, x))
         elif isinstance(x, Mapping):
@@ -451,6 +452,8 @@ def traverse_type(data, data_type, f, *args, **kwargs):
 
         if isinstance(x, data_type):
             f(x, *args, **kwargs)
+        elif isinstance(x, str):
+            pass    
         elif isinstance(x, Sequence):
             for v in x:
                 rec(v)
