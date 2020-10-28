@@ -2,7 +2,6 @@ import importlib
 import sys
 import pkgutil
 
-from structs.struct import *
 
 def import_submodules(package_name):
     """ Import all submodules of a module, recursively
