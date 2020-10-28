@@ -12,7 +12,7 @@ import operator
 import itertools
 
 from .struct import struct, Struct, transpose_structs, map_type
-
+from functools import partial
 
 class Table(Struct):
     def __init__(self, d:dict):
@@ -178,13 +178,13 @@ class Histogram:
 
 
 def map_tensors(data, f, *args, **kwargs):
-    return map_type(data, torch.Tensor, partial(f, *args, **args))  
+    return map_type(data, torch.Tensor, partial(f, *args, **kwargs))  
 
 def shape_info(x):
-    return map_arrays(x, lambda x: tuple([*x.shape, type(x), x.dtype]))
+    return map_tensors(x, lambda x: tuple([*x.shape, type(x), x.dtype]))
 
 def shape(x):
-    return map_arrays(x, lambda x: tuple(x.shape))
+    return map_tensors(x, lambda x: tuple(x.shape))
 
 
 def from_numpy(data):
