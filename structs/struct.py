@@ -47,6 +47,8 @@ class Struct(Mapping):
     def build(**d):
         return Struct(d)
 
+    def __setitem__(self, index, value):
+        self.__dict__[index] = value
 
     def __getitem__(self, index):
         return self.__dict__[index]
