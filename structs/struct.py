@@ -47,12 +47,14 @@ class Struct(Mapping):
     def build(**d):
         return Struct(d)
 
+    def __reduce__(self):
+        return (self.__class__, (self.__dict__,))
 
     def __getitem__(self, index):
         return self.__dict__[index]
 
     def __iter__(self):
-        assert False, "usually a mistake, did you mean items()"
+        return self.__dict__.__iter__()
 
     def items(self):
         return self.__dict__.items()
