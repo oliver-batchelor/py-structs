@@ -47,12 +47,17 @@ class Struct(Mapping):
     def build(**d):
         return Struct(d)
 
+    def __reduce__(self):
+        return (self.__class__, (self.__dict__,))
+
+    def __setitem__(self, index, value):
+        self.__dict__[index] = value
 
     def __getitem__(self, index):
         return self.__dict__[index]
 
     def __iter__(self):
-        assert False, "usually a mistake, did you mean items()"
+        return self.__dict__.__iter__()
 
     def items(self):
         return self.__dict__.items()
@@ -83,6 +88,17 @@ class Struct(Mapping):
     def _filter_none(self):
         return self.__class__({k: v for k, v in self.items() if v is not None})
 
+    def _filterMapWithKey(self, f, *args, **kwargs):
+        return self.__class__({k: result for k, v in self.items() 
+            for result in [f(k, v)] 
+                if result is not None
+            })
+
+    def _filterMap(self, f, *args, **kwargs):
+        return self.__class__({k: result for k, v in self.items() 
+            for result in [f(v, *args, **kwargs)] 
+                if result is not None
+            })
 
     def _map(self, f, *args, **kwargs):
         return self.__class__({k: f(v, *args, **kwargs) for k, v in self.items()})
@@ -236,16 +252,8 @@ class ZipList():
         self.elems.append(x)
         return self
 
-
-
-
 def struct(**d):
     return Struct(d)
-
-
-
-
-
 
 def flatten(x, prefix = ''):
     def add_prefix(k):
@@ -265,8 +273,6 @@ def flatten(x, prefix = ''):
         return flatten_iter(x.items())
     else:
         return [(prefix, x)]
-
-
 
 
 def get_default_args(func):
