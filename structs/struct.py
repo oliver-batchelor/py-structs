@@ -37,40 +37,59 @@ def to_structs(d):
         return d
  
 
+class Indexed():
+    def __init__(self, struct):
+        assert isinstance(struct, Struct)
+        self._struct = struct
+
+    def __getitem__(self, index):
+        return self._struct._map(lambda x: x[index])
+
+
 
 class Struct(Mapping):
     def __init__(self, entries):
-        assert type(entries) == dict
-        self.__dict__.update(entries)
+        assert isinstance(entries, dict)
+        self._entries = entries
 
     @staticmethod 
-    def build(**d):
+    def build(d):
         return Struct(d)
 
     def __reduce__(self):
-        return (self.__class__, (self.__dict__,))
+        return (self.__class__, (self.entries,))
 
     def __setitem__(self, index, value):
-        self.__dict__[index] = value
+        self._entries[index] = value
 
     def __getitem__(self, index):
-        return self.__dict__[index]
+        return self._entries[index]
+
+    @property
+    def _index(self) -> np.ndarray:
+        return Indexed(self)
 
     def __iter__(self):
-        return self.__dict__.__iter__()
+        return self._entries.__iter__()
 
     def items(self):
-        return self.__dict__.items()
+        return self._entries.items()
 
     def keys(self):
-        return self.__dict__.keys()
+        return self._entries.keys()
 
     def values(self):
-        return self.__dict__.values()
+        return self._entries.values()
+
+    def __getattr__(self, k):
+        if k in self._entries:
+            return self._entries[k]
+        else: 
+            return object.__getattribute__(self, k) 
 
     def __eq__(self, other):
         if isinstance(other, Struct):
-            return self.__dict__ == other.__dict__
+            return self._entries == other._entries
         else:
             return False
 
@@ -79,33 +98,33 @@ class Struct(Mapping):
 
     def _subset(self, *keys):
         d = {k:self[k] for k in keys}
-        return self.__class__(d)
+        return self.build(d)
 
     def _without(self, *keys):
         d = {k:v for k, v in self.items() if not (k in keys)}
-        return self.__class__(d)
+        return self.build(d)
 
     def _filter_none(self):
-        return self.__class__({k: v for k, v in self.items() if v is not None})
+        return self.build({k: v for k, v in self.items() if v is not None})
 
     def _filterMapWithKey(self, f, *args, **kwargs):
-        return self.__class__({k: result for k, v in self.items() 
+        return self.build({k: result for k, v in self.items() 
             for result in [f(k, v)] 
                 if result is not None
             })
 
     def _filterMap(self, f, *args, **kwargs):
-        return self.__class__({k: result for k, v in self.items() 
+        return self.build({k: result for k, v in self.items() 
             for result in [f(v, *args, **kwargs)] 
                 if result is not None
             })
 
     def _map(self, f, *args, **kwargs):
-        return self.__class__({k: f(v, *args, **kwargs) for k, v in self.items()})
+        return self.build({k: f(v, *args, **kwargs) for k, v in self.items()})
 
     def _mapWithKey(self, f):
-        m = {k: f(k, v) for k, v in self.__dict__.items()}
-        return self.__class__(m)
+        m = {k: f(k, v) for k, v in self._entries.items()}
+        return self.build(m)
 
     def __repr__(self):
         commaSep = ", ".join(["{}={}".format(str(k), repr(v)) for k, v in self.items()])
@@ -115,7 +134,7 @@ class Struct(Mapping):
         return self.__repr__()
 
     def __len__(self):
-        return self.__dict__.__len__()
+        return self._entries.__len__()
 
     def __floordiv__(self, other):
         if isinstance(other, Number):
@@ -147,7 +166,7 @@ class Struct(Mapping):
         assert self.keys() == other.keys(), str(self.keys()) + " vs. " + str(other.keys())
 
         r = {k:f(self[k], other[k]) for k in self.keys()}
-        return self.__class__(r)
+        return self.build(r)
 
 
     def _merge(self, other):
@@ -156,16 +175,16 @@ class Struct(Mapping):
         """
 
         assert isinstance(other, Struct)
-        d = self.__dict__.copy()
-        d.update(other.__dict__)
+        d = self._entries.copy()
+        d.update(other._entries)
 
-        return self.__class__(d)
+        return self.build(d)
 
     def _extend(self, **values):
-        d = self.__dict__.copy()
+        d = self._entries.copy()
         d.update(values)
 
-        return self.__class__(d)
+        return self.build(d)
 
 
     def __radd__(self, other):
@@ -444,6 +463,8 @@ def map_type(data, data_type, f, *args, **kwargs):
             return f(x, *args, **kwargs)
         elif isinstance(x, str):
             return x
+        elif hasattr(x, '_map'):
+            return x._map(rec)
         elif isinstance(x, Sequence):
             return x.__class__(map(rec, x))
         elif isinstance(x, Mapping):

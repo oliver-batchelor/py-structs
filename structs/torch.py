@@ -11,7 +11,8 @@ import math
 import operator
 import itertools
 
-from .struct import struct, Struct, transpose_structs, map_type
+from .struct import struct, Struct, transpose_structs
+
 from functools import partial
 
 class Table(Struct):
@@ -175,6 +176,8 @@ class Histogram:
             return self.sum / self.counts.sum().item()
         else:
             return 0
+
+
 
 
 def map_tensors(data, f, *args, **kwargs):

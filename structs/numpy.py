@@ -1,3 +1,4 @@
+from os.path import commonprefix
 from typing import List
 from collections import Counter
 from collections.abc import Mapping
@@ -13,65 +14,86 @@ from functools import partial
 from .struct import struct, Struct, transpose_structs, map_type
 
 
+
+
+
 class Table(Struct):
     def __init__(self, d:dict):
 
         assert len(d) > 0, "empty Table"
         t = next(iter(d.values()))
-      
+
         for (k, v) in d.items():
             assert type(v) == np.ndarray, "expected ndarray, got " + type(t).__name__
-            assert v.shape[0] == t.shape[0], "mismatched column sizes: " + str(shape(d))
+
+        shapes = [t.shape for t in d.values()]
+        self._prefix = commonprefix(shapes)
 
         super(Table, self).__init__(d) 
 
     @staticmethod
     def from_structs(structs : List[Struct]) -> 'Table':
         struct_lists = transpose_structs(structs)
-        return Table(struct_lists._map(np.stack).__dict__)
-   
+        return Table(struct_lists._map(np.stack)._entries)
+
+    @staticmethod
+    def singleton(struct : Struct) -> 'Table':     
+        return Table(struct._map(numpy.expand_dims, axis=0))
+
+    @property
+    def _shape(self) -> 'Struct':     
+        return self._map(lambda x: x.shape)
+
     @staticmethod 
-    def build(**d):
-        return Table(d)
+    def stack(structs : List[Struct]) -> 'Table':
+        return Table.from_structs(structs)
 
-    def __getitem__(self, index:int) -> np.ndarray:
-        return self.__dict__[index]        
+    @staticmethod 
+    def build(d:dict):
+        is_array = [isinstance(t, np.ndarray) for t in d.values()]
+        if all(is_array):
+            return Table(d)
+        else:
+            return Struct(d)
 
-    def _index_select(self, index:np.ndarray) -> 'Table':
+
+    def _index_select(self, index:np.ndarray, axis=0) -> 'Table':
+        assert axis < len(self.prefix)
+
         if isinstance(index, np.ndarray):
-            assert index.dtype == torch.int64 
+            assert issubclass(index.dtype.type, numbers.Integral)
             assert index.dim() == 1
         else:
-            assert isinstance(index, int), "Table.index_select: unsupported index type" + type(index).__name__
+            assert issubclass(type(index), numbers.Integral),\
+                "Table.index_select: unsupported index type" + type(index).__name__
 
-        return self._map(lambda t: t[index])
+        return self._map(lambda t: np.take(t, index, axis=axis))
 
 
-    def _index(self, index:int) -> np.ndarray:
-        return self._index_select(np.ndarray([index], dtype=int))
 
         
-    def _narrow(self, start, n):
-        return self._map(lambda t: t.narrow(0, start, n))
+    def _narrow(self, start, n, axis=0):
+        return self._index_select(np.arange(start, start + n), axis=axis)
 
 
-    def _take(self, n):
-        return self._narrow(0, min(self._size, n))
+    def _take(self, n, axis=0): 
+        return self._narrow(0, min(self._prefix[axis], n), axis=axis)
 
-    def _drop(self, n):
-        n = min(self._size, n)
-        return self._narrow(n, self._size - n)
+    def _drop(self, n, axis=0):
+        n = min(self._prefix[axis], n)
+        return self._narrow(n, self._prefix[axis] - n, axis=axis)
 
 
-    def _sequence(self):
+    def _sequence(self, axis = 0):
         return (self._index_select(i) for i in range(0, self._size))
 
-    def _sort_on(self, key, descending=False):
+    def _sort_on(self, key, descending=False, axis=0):
         assert key in self
         assert self[key].dim() == 1
 
-        values, inds = self[key].sort(descending = descending)
-        return Table({k: values if k == key else v[inds] for k, v in self.items()})
+        values, inds = self[key].sort(descending = descending, axis=axis)
+        return Table({k: values if k == key else np.take(v, inds, axis=axis) 
+            for k, v in self.items()})
 
     @property
     def _head(self):
@@ -81,21 +103,11 @@ class Table(Struct):
     def _size(self):
         return self._head.shape[0]
 
-    @property
-    def _device(self):
-        return self._head.device
-
-    def _to(self, device):
-        return self._map(lambda t: t.to(device))
-
-    def _cpu(self):
-        return self._map(lambda t: t.cpu())
 
 
 
 def table(**d):
     return Table(d)
-
 
 
 
@@ -195,3 +207,15 @@ def stack_tables(tables, dim=0):
 def cat_tables(tables, dim=0):
     t = transpose_structs(tables)
     return Table(dict(t._map(np.concatenate, axis=dim))) 
+
+
+if __name__ == '__main__':
+    
+    x = struct(a = np.arange(0, 10), b = np.array([[1,2,3], [3,4,5]]))
+    t = Table.from_structs([x, x, x, x])
+
+    t = Table.from_structs([t, t, t])
+
+    print(t._shape)
+
+    print(t._index[:, 1:3]._shape)
