@@ -82,10 +82,12 @@ class Struct(Mapping):
         return self._entries.values()
 
     def __getattr__(self, k):
-        if k in self._entries:
-            return self._entries[k]
-        else: 
-            return object.__getattribute__(self, k) 
+        if k[0] == "_":
+          return object.__getattribute__(self, k) 
+        elif k in self._entries:
+          return self._entries[k]
+        else:
+          raise AttributeError(f"Struct does not contain '{k}', options are {list(self._entries.keys())}") 
 
     def __eq__(self, other):
         if isinstance(other, Struct):

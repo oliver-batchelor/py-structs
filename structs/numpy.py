@@ -4,7 +4,7 @@ from collections import Counter
 from collections.abc import Mapping
 import numpy as np
 
-from numbers import Number
+from numbers import Number, Integral
 import math
 
 import operator
@@ -58,13 +58,13 @@ class Table(Struct):
 
 
     def _index_select(self, index:np.ndarray, axis=0) -> 'Table':
-        assert axis < len(self.prefix)
+        assert axis < len(self._prefix)
 
         if isinstance(index, np.ndarray):
-            assert issubclass(index.dtype.type, numbers.Integral)
+            assert issubclass(index.dtype.type, Integral)
             assert index.dim() == 1
         else:
-            assert issubclass(type(index), numbers.Integral),\
+            assert issubclass(type(index), Integral),\
                 "Table.index_select: unsupported index type" + type(index).__name__
 
         return self._map(lambda t: np.take(t, index, axis=axis))
@@ -85,7 +85,7 @@ class Table(Struct):
 
 
     def _sequence(self, axis = 0):
-        return (self._index_select(i) for i in range(0, self._size))
+        return (self._index_select(i, axis=axis) for i in range(0, self._prefix[axis]))
 
     def _sort_on(self, key, descending=False, axis=0):
         assert key in self
