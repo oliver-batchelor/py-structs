@@ -1,5 +1,5 @@
 from os.path import commonprefix
-from typing import List
+from typing import List, Tuple
 from collections import Counter
 from collections.abc import Mapping
 import numpy as np
@@ -11,10 +11,7 @@ import operator
 import itertools
 from functools import partial
 
-from .struct import struct, Struct, transpose_structs, map_type
-
-
-
+from .struct import struct, Struct, transpose_structs, map_type, traverse_type, reduce_type
 
 
 class Table(Struct):
@@ -38,17 +35,21 @@ class Table(Struct):
 
     @staticmethod
     def singleton(struct : Struct) -> 'Table':     
-        return Table(struct._map(numpy.expand_dims, axis=0))
+        return Table(struct._map(np.expand_dims, axis=0))
 
     @property
-    def _shape(self) -> 'Struct':     
+    def _shapes(self) -> 'Struct':     
         return self._map(lambda x: x.shape)
+
+    @property
+    def _shape(self) -> Tuple:
+        return self._prefix
 
     @staticmethod 
     def stack(structs : List[Struct]) -> 'Table':
         return Table.from_structs(structs)
 
-    @staticmethod 
+    @staticmethod
     def build(d:dict):
         is_array = [isinstance(t, np.ndarray) for t in d.values()]
         if all(is_array):
@@ -56,6 +57,9 @@ class Table(Struct):
         else:
             return Struct(d)
 
+    @staticmethod
+    def create(**d):
+        return Table(d)
 
     def _index_select(self, index:np.ndarray, axis=0) -> 'Table':
         assert axis < len(self._prefix)
@@ -68,8 +72,6 @@ class Table(Struct):
                 "Table.index_select: unsupported index type" + type(index).__name__
 
         return self._map(lambda t: np.take(t, index, axis=axis))
-
-
 
         
     def _narrow(self, start, n, axis=0):
@@ -104,11 +106,8 @@ class Table(Struct):
         return self._head.shape[0]
 
 
-
-
 def table(**d):
     return Table(d)
-
 
 
 class Histogram:
@@ -189,6 +188,14 @@ class Histogram:
 
 def map_arrays(data, f, *args, **kwargs):
     return map_type(data,  np.ndarray, partial(f, *args, **kwargs))  
+
+def traverse_arrays(data, f, *args, **kwargs):
+    return traverse_type(data,  np.ndarray, partial(f, *args, **kwargs))  
+
+def reduce_arrays(data, f, op, initializer=None):
+    return reduce_type(data,  np.ndarray, f, op, initializer=initializer)  
+
+
 
 def shape_info(x):
     return map_arrays(x, lambda x: tuple([*x.shape, type(x), x.dtype]))
