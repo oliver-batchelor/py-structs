@@ -377,6 +377,16 @@ def transpose_lists(lists):
   return list(zip(*lists))
 
 
+def split_list(xs, sizes):
+  assert len(xs) == sum(sizes)
+  splits = []
+  for size in sizes:
+    
+    splits.append(xs[:size])
+    xs = xs[size:] 
+  return splits
+
+
 def drop_while(f, xs):
   while(len(xs) > 0 and f(xs[0])):
     _, *xs = xs
@@ -410,8 +420,12 @@ def concat_lists(xs):
   return list(itertools.chain.from_iterable(xs))
 
 
-def map_dict(f, d):
-  return {k:  f(v) for k, v in d.items()}
+def map_dict(f, d, *args, **kwargs):
+  return {k:  f(v,  *args, **kwargs) for k, v in d.items()}
+
+
+def map_list(f, xs, *args, **kwargs):
+  return [f(x, *args, **kwargs) for x in xs]
 
 
 def pprint_struct(s, indent=2, width=160):
