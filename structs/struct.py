@@ -125,7 +125,8 @@ class Struct(Mapping):
                        })
 
   def _map(self, f, *args, **kwargs):
-    return self.build({k: f(v, *args, **kwargs) for k, v in self.items()})
+    d = {k: f(v, *args, **kwargs) for k, v in self.items()}
+    return self.build(d)
 
   def _mapWithKey(self, f):
     m = {k: f(k, v) for k, v in self._entries.items()}
