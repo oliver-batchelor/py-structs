@@ -169,8 +169,6 @@ class Struct(Mapping):
 
   def _zipWith(self, f, other):
     assert isinstance(other, Struct)
-    assert self.keys() == other.keys(), str(
-        self.keys()) + " vs. " + str(other.keys())
 
     r = {k: f(self[k], other[k]) for k in self.keys()}
     return self.build(r)

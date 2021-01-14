@@ -216,13 +216,3 @@ def cat_tables(tables, dim=0):
     return Table(dict(t._map(np.concatenate, axis=dim))) 
 
 
-if __name__ == '__main__':
-    
-    x = struct(a = np.arange(0, 10), b = np.array([[1,2,3], [3,4,5]]))
-    t = Table.from_structs([x, x, x, x])
-
-    t = Table.from_structs([t, t, t])
-
-    print(t._shape)
-
-    print(t._index[:, 1:3]._shape)
