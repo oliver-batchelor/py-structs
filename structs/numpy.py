@@ -21,7 +21,7 @@ class Table(Struct):
         t = next(iter(d.values()))
 
         for (k, v) in d.items():
-            assert type(v) == np.ndarray, "expected ndarray, got " + type(t).__name__
+            assert hasattr(v, 'shape'), "expected ndarray, got " + type(t).__name__
 
         shapes = [t.shape for t in d.values()]
         self._prefix = commonprefix(shapes)

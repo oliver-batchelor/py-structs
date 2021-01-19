@@ -385,6 +385,9 @@ def split_list(xs, sizes):
     xs = xs[size:] 
   return splits
 
+def split_dict(d):
+  return list(d.keys()), list(d.values())
+
 
 def drop_while(f, xs):
   while(len(xs) > 0 and f(xs[0])):
