@@ -430,6 +430,12 @@ def map_list(f, xs, *args, **kwargs):
   return [f(x, *args, **kwargs) for x in xs]
 
 
+def map_none(f, x, *args, **kwargs):
+  return f(x, *args, **kwargs) if x is not None else None
+
+
+
+
 def pprint_struct(s, indent=2, width=160):
   pp = pprint.PrettyPrinter(indent=indent, width=width)
   pp.pprint(s._to_dicts())
