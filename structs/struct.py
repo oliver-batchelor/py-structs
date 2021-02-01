@@ -389,8 +389,8 @@ def split_dict(d):
   return list(d.keys()), list(d.values())
 
 def subset(d, keys):
-  items = {k:d[k] for k in keys}
-  return d.__class__(items)
+  d_subset = {k:d[k] for k in keys}
+  return d.__class__(d_subset)
 
 def drop_while(f, xs):
   while(len(xs) > 0 and f(xs[0])):
