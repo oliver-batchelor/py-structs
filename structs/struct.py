@@ -388,6 +388,9 @@ def split_list(xs, sizes):
 def split_dict(d):
   return list(d.keys()), list(d.values())
 
+def subset(d, keys):
+  items = {k:d[k] for k in keys}
+  return d.__class__(items)
 
 def drop_while(f, xs):
   while(len(xs) > 0 and f(xs[0])):
@@ -428,6 +431,10 @@ def map_dict(f, d, *args, **kwargs):
 
 def map_list(f, xs, *args, **kwargs):
   return [f(x, *args, **kwargs) for x in xs]
+
+
+def map_none(f, x, *args, **kwargs):
+  return f(x, *args, **kwargs) if x is not None else None
 
 
 def pprint_struct(s, indent=2, width=160):
@@ -487,9 +494,10 @@ def choose(*options):
   for x in options:
     if x is not None:
       return x
-
   assert False, "choose: all options were None"
 
+def when(x, value):
+  return None if x is None else value
 
 def add_dict(d, k):
   d[k] = d[k] + 1 if k in d else 1
