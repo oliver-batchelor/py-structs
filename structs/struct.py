@@ -388,6 +388,9 @@ def split_list(xs, sizes):
 def split_dict(d):
   return list(d.keys()), list(d.values())
 
+def invert_keys(d):
+  inverted_d = {v:k for k, v in d.items()}
+  return d.__class__(inverted_d)
 
 def subset(d, keys):
   d_subset = {k:d[k] for k in keys}
@@ -437,7 +440,8 @@ def map_list(f, xs, *args, **kwargs):
 def map_none(f, x, *args, **kwargs):
   return f(x, *args, **kwargs) if x is not None else None
 
-
+def apply_none(f, *args, **kwargs):
+  return f(*args, **kwargs) if f is not None else None
 
 
 def pprint_struct(s, indent=2, width=160):
