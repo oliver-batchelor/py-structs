@@ -443,7 +443,6 @@ def map_none(f, x, *args, **kwargs):
 def apply_none(f, *args, **kwargs):
   return f(*args, **kwargs) if f is not None else None
 
-
 def pprint_struct(s, indent=2, width=160):
   pp = pprint.PrettyPrinter(indent=indent, width=width)
   pp.pprint(s._to_dicts())
@@ -501,9 +500,10 @@ def choose(*options):
   for x in options:
     if x is not None:
       return x
-
   assert False, "choose: all options were None"
 
+def when(x, value):
+  return None if x is None else value
 
 def add_dict(d, k):
   d[k] = d[k] + 1 if k in d else 1
