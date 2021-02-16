@@ -112,9 +112,13 @@ class Struct(Mapping):
   def _filter_none(self):
     return self.build({k: v for k, v in self.items() if v is not None})
 
+  def _filterWithKey(self, f, *args, **kwargs):
+    return self.build({k: v for k, v in self.items() if f(k, *args, **kwargs)})
+
+
   def _filterMapWithKey(self, f, *args, **kwargs):
     return self.build({k: result for k, v in self.items()
-                       for result in [f(k, v)]
+                       for result in [f(k, v, *args, **kwargs)]
                        if result is not None
                        })
 
