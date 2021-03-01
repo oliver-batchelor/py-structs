@@ -2,7 +2,7 @@ from setuptools import setup, find_namespace_packages
 setup(
 
     name="py-structs",
-    version="0.2.0",
+    version="0.2.1",
     author="Oliver Batchelor",
     author_email="saulzar@gmail.com",
     description="Python structs and tables using dot notation",
