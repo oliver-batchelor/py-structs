@@ -482,7 +482,7 @@ def transpose_dicts(d):
 
 def transpose_dict_lists(d):
   n = max([len(v) for v in d.values()])
-  r = [{}] * n
+  r = [{} for _ in range(n)]
 
   for k, v in d.items():
     for j, u in enumerate(v):
@@ -551,10 +551,10 @@ def map_type(data, data_type, f, *args, **kwargs):
       return x
     elif hasattr(x, '_map'):
       return x._map(rec)
-    elif isinstance(x, Sequence):
-      return x.__class__(map(rec, x))
     elif isinstance(x, Mapping):
       return x.__class__({k: rec(v) for k, v in x.items()})
+    elif isinstance(x, Sequence):
+      return x.__class__(map(rec, x))      
     else:
       return x
   return rec(data)
