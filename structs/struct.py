@@ -92,6 +92,13 @@ class Struct(Mapping):
       raise AttributeError(
           f"Struct does not contain '{k}', options are {list(self._entries.keys())}")
 
+  def __setattr__(self, k, v):
+    if k[0] == "_":
+      return object.__setattr__(self, k, v)
+    else:
+      self._entries[k] = v
+
+
   def __eq__(self, other):
     if isinstance(other, Struct):
       return self._entries == other._entries
