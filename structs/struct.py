@@ -470,19 +470,23 @@ def append_dict(d, k, v):
   return d
 
 
-def transpose_dicts(d):
-  r = {}
+def transpose_dicts(d, dict_type=None):
+  dict_type = dict_type or d.__class__
+  r = dict_type({})
+
   for k, v in d.items():
     for j, u in v.items():
-      inner = r.get(j) or {}
+      inner = r.get(j) or d.__class__({})
       inner[k] = u
       r[j] = inner
   return r
 
 
-def transpose_dict_lists(d):
+def transpose_dict_lists(d, dict_type=None):
+  dict_type = dict_type or d.__class__
+
   n = max([len(v) for v in d.values()])
-  r = [{}] * n
+  r = [dict_type({})] * n
 
   for k, v in d.items():
     for j, u in enumerate(v):
@@ -490,8 +494,10 @@ def transpose_dict_lists(d):
   return r
 
 
-def transpose_list_dicts(xs):
-  r = {}
+def transpose_list_dicts(xs, dict_type=None):
+  dict_type = dict_type or xs[0].__class__
+
+  r = dict_type({})
   for d in xs:
     for k, v in d.items():
       inner = r.get(k) or []
