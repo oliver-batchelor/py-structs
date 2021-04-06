@@ -92,6 +92,13 @@ class Struct(Mapping):
       raise AttributeError(
           f"Struct does not contain '{k}', options are {list(self._entries.keys())}")
 
+  def __setattr__(self, k, v):
+    if k[0] == "_":
+      return object.__setattr__(self, k, v)
+    else:
+      self._entries[k] = v
+
+
   def __eq__(self, other):
     if isinstance(other, Struct):
       return self._entries == other._entries
@@ -196,7 +203,7 @@ class Struct(Mapping):
 
   def _update(self, **values):
     for k in values:
-      assert k in self, f"_update: entry not found {k}, options are {list[self.keys()]}"
+      assert k in self, f"_update: entry not found {k}, options are {list(self.keys())}"
 
     return self._extend(**values)
 
@@ -486,7 +493,7 @@ def transpose_dict_lists(d, dict_type=None):
   dict_type = dict_type or d.__class__
 
   n = max([len(v) for v in d.values()])
-  r = [dict_type({})] * n
+  r = [dict_type({}) for _ in range(n)]
 
   for k, v in d.items():
     for j, u in enumerate(v):
@@ -557,10 +564,10 @@ def map_type(data, data_type, f, *args, **kwargs):
       return x
     elif hasattr(x, '_map'):
       return x._map(rec)
-    elif isinstance(x, Sequence):
-      return x.__class__(map(rec, x))
     elif isinstance(x, Mapping):
       return x.__class__({k: rec(v) for k, v in x.items()})
+    elif isinstance(x, Sequence):
+      return x.__class__(map(rec, x))      
     else:
       return x
   return rec(data)
