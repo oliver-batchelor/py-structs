@@ -2,6 +2,7 @@ from typing import List
 from collections import Counter
 from collections.abc import Mapping, Sequence
 import numpy as np
+import dataclasses
 
 from numbers import Number
 import math
@@ -28,6 +29,8 @@ def to_dicts(s):
 def to_structs(d):
   if isinstance(d, str):
     return d
+  if dataclasses.is_dataclass(d):
+    return to_structs(dataclasses.asdict(d))
   if isinstance(d, dict):
     return Struct({k: to_structs(v) for k, v in d.items()})
   if isinstance(d, Sequence):

@@ -1,6 +1,4 @@
 from typing import List
-from collections import Counter
-from collections.abc import Mapping, Sequence
 
 import torch
 import numpy as np
@@ -8,10 +6,7 @@ import numpy as np
 from numbers import Number
 import math
 
-import operator
-import itertools
-
-from .struct import struct, Struct, transpose_structs
+from .struct import map_type, struct, Struct, transpose_structs
 
 from functools import partial
 
@@ -199,7 +194,7 @@ def to_numpy(data):
 
 
 def tensors_to(t, **kwargs):
-    return map_tensors(t, Tensor.to, **kwargs)        
+    return map_tensors(t, torch.Tensor.to, **kwargs)        
 
 
 def stack_tables(tables, dim=0):
