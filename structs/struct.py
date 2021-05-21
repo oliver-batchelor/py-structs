@@ -459,12 +459,12 @@ def apply_none(f, *args, **kwargs):
 
 def pprint_struct(s, indent=2, width=160):
   pp = pprint.PrettyPrinter(indent=indent, width=width)
-  pp.pprint(s._to_dicts())
+  pp.pprint(to_dicts(s))
 
 
 def pformat_struct(s, indent=2, width=160):
   pp = pprint.PrettyPrinter(indent=indent, width=width)
-  return pp.pformat(s._to_dicts())
+  return pp.pformat(to_dicts(s))
 
 
 def sum_list(xs):

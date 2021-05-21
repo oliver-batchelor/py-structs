@@ -18,10 +18,8 @@ class Table(Struct):
     def __init__(self, d:dict):
 
         assert len(d) > 0, "empty Table"
-        t = next(iter(d.values()))
-
         for (k, v) in d.items():
-            assert hasattr(v, 'shape'), "expected ndarray, got " + type(t).__name__
+            assert hasattr(v, 'shape'), "expected ndarray, got " + type(v).__name__
 
         shapes = [t.shape for t in d.values()]
         self._prefix = commonprefix(shapes)
