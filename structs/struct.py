@@ -26,15 +26,22 @@ def to_dicts(s):
     return s
 
 
-def to_structs(d):
+def to_structs(d, ignore=[]):
+
+  for t in ignore:
+    if isinstance(d, t):
+      return d
+  
+  rec = lambda x: to_structs(x, ignore=ignore)
+
   if isinstance(d, str):
     return d
   if dataclasses.is_dataclass(d):
-    return to_structs(dataclasses.asdict(d))
+    return rec(dataclasses.asdict(d))
   if isinstance(d, dict):
-    return Struct({k: to_structs(v) for k, v in d.items()})
+    return Struct({k: rec(v) for k, v in d.items()})
   if isinstance(d, Sequence):
-    return d.__class__([to_structs(v) for v in d])
+    return d.__class__([rec(v) for v in d])
   else:
     return d
 
