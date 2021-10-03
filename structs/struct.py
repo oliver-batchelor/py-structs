@@ -565,6 +565,16 @@ def partition_by(xs, f):
   return partitions
 
 
+def merge_dicts(dicts, dict_type=None):
+  dict_type = dict_type or dicts[0].__class__
+
+  merged = {}
+  for d in dicts:
+    merged.update(d)
+
+  return dict_type(merged)
+
+
 def map_type(data, data_type, f, *args, **kwargs):
   def rec(x):
 
