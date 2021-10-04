@@ -1,6 +1,6 @@
 from typing import List
 from collections import Counter
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, Sequence, Iterable
 import numpy as np
 import dataclasses
 
@@ -566,6 +566,7 @@ def partition_by(xs, f):
 
 
 def merge_dicts(dicts, dict_type=None):
+  assert isinstance(dicts, Iterable)
   dict_type = dict_type or dict
 
   merged = {}
