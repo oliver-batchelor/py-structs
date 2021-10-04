@@ -566,7 +566,7 @@ def partition_by(xs, f):
 
 
 def merge_dicts(dicts, dict_type=None):
-  dict_type = dict_type or dicts[0].__class__
+  dict_type = dict_type or dict
 
   merged = {}
   for d in dicts:
