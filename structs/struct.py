@@ -326,7 +326,7 @@ def struct(**d):
   return Struct(d)
 
 
-def flatten(x, prefix=''):
+def flatten(x, prefix=''): 
   def add_prefix(k):
     if prefix == '':
       return str(k)
@@ -334,7 +334,9 @@ def flatten(x, prefix=''):
       return prefix + "." + str(k)
 
   def flatten_iter(iter):
-    return [flatten(inner, add_prefix(i)) for i, inner in iter]
+    return {k:v 
+      for i, inner in iter 
+        for k, v in flatten(inner, add_prefix(i)).items()}
 
   if type(x) == list:
     return flatten_iter(enumerate(x))
@@ -343,7 +345,8 @@ def flatten(x, prefix=''):
   elif isinstance(x, Mapping):
     return flatten_iter(x.items())
   else:
-    return [(prefix, x)]
+    return {prefix:x}
+
 
 
 def get_default_args(func):
