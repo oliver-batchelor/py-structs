@@ -326,12 +326,12 @@ def struct(**d):
   return Struct(d)
 
 
-def flatten(x, prefix=''):
+def flatten(x, prefix='', sep='_'):
   def add_prefix(k):
     if prefix == '':
       return str(k)
     else:
-      return prefix + "." + str(k)
+      return prefix + sep + str(k)
 
   def flatten_iter(iter):
     return [flatten(inner, add_prefix(i)) for i, inner in iter]
