@@ -1,6 +1,6 @@
 from typing import List
 from collections import Counter
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, Sequence, Iterable
 import numpy as np
 import dataclasses
 
@@ -326,7 +326,7 @@ def struct(**d):
   return Struct(d)
 
 
-def flatten(x, prefix='', sep='_'):
+def flatten(x, sep='_', prefix=''):
   def add_prefix(k):
     if prefix == '':
       return str(k)
@@ -334,7 +334,9 @@ def flatten(x, prefix='', sep='_'):
       return prefix + sep + str(k)
 
   def flatten_iter(iter):
-    return [flatten(inner, add_prefix(i)) for i, inner in iter]
+    return {k:v 
+      for i, inner in iter 
+        for k, v in flatten(inner, sep, add_prefix(i)).items()}
 
   if type(x) == list:
     return flatten_iter(enumerate(x))
@@ -343,7 +345,11 @@ def flatten(x, prefix='', sep='_'):
   elif isinstance(x, Mapping):
     return flatten_iter(x.items())
   else:
-    return [(prefix, x)]
+    return {prefix:x}
+
+
+def flatten_structs(x, sep='_'):
+  return Struct(flatten(x, sep))
 
 
 def get_default_args(func):
@@ -563,6 +569,17 @@ def partition_by(xs, f):
     append_dict(partitions, k, v)
 
   return partitions
+
+
+def merge_dicts(dicts, dict_type=None):
+  assert isinstance(dicts, Iterable)
+  dict_type = dict_type or dict
+
+  merged = {}
+  for d in dicts:
+    merged.update(d)
+
+  return dict_type(merged)
 
 
 def map_type(data, data_type, f, *args, **kwargs):
