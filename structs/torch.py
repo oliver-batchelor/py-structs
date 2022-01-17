@@ -179,7 +179,7 @@ def map_tensors(data, f, *args, **kwargs):
     return map_type(data, torch.Tensor, partial(f, *args, **kwargs))  
 
 def shape_info(x):
-    return map_tensors(x, lambda x: tuple([*x.shape, type(x), x.dtype]))
+    return map_tensors(x, lambda x: tuple([*x.shape, x.dtype, x.device]))
 
 def shape(x):
     return map_tensors(x, lambda x: tuple(x.shape))
