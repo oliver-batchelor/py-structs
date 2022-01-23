@@ -185,6 +185,8 @@ def shape_info(x):
             flags = ["channels_last"]
         elif x.is_contiguous(memory_format=torch.contiguous_format):
             flags = ["contiguous"]
+        elif x.is_contiguous(memory_format=channels_last_3d):
+            flags = ["channels_last_3d"]
 
         return tuple([ tuple(x.shape), x.dtype, x.device, *flags]) 
 
