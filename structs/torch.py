@@ -179,7 +179,16 @@ def map_tensors(data, f, *args, **kwargs):
     return map_type(data, torch.Tensor, partial(f, *args, **kwargs))  
 
 def shape_info(x):
-    return map_tensors(x, lambda x: tuple([*x.shape, x.dtype, x.device]))
+    def get_info(x):
+        flags = []
+        if x.is_contiguous(memory_format=torch.channels_last):
+            flags = ["channels_last"]
+        elif x.is_contiguous(memory_format=torch.contiguous_format):
+            flags = ["contiguous"]
+
+        return tuple([ tuple(x.shape), x.dtype, x.device, *flags]) 
+
+    return map_tensors(x, get_info) 
 
 def shape(x):
     return map_tensors(x, lambda x: tuple(x.shape))
