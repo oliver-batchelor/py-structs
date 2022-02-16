@@ -196,7 +196,7 @@ def reduce_arrays(data, f, op, initializer=None):
 
 
 def shape_info(x):
-    return map_arrays(x, lambda x: tuple([*x.shape, type(x), x.dtype]))
+    return map_arrays(x, lambda x: tuple([*x.shape, x.dtype]))
 
 def shape(x):
     return map_arrays(x, lambda x: tuple(x.shape))
