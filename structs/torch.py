@@ -6,7 +6,9 @@ import numpy as np
 from numbers import Number
 import math
 
-from .struct import map_type, struct, Struct, transpose_structs
+from structs.numpy import map_array_like
+
+from .struct import map_tree, map_type, struct, Struct, transpose_structs
 
 from functools import partial
 
@@ -174,27 +176,28 @@ class Histogram:
 
 
 
-
 def map_tensors(data, f, *args, **kwargs):
-    return map_type(data, torch.Tensor, partial(f, *args, **kwargs))  
+    return map_type(data, torch.Tensor, f, *args, **kwargs)  
+
+
 
 def shape_info(x):
     def get_info(x):
-        flags = []
-        if x.is_contiguous(memory_format=torch.channels_last):
-            flags += ["channels_last"]
-        if x.is_contiguous(memory_format=torch.contiguous_format):
-            flags += ["contiguous"]
-        if x.is_contiguous(memory_format=channels_last_3d):
-            flags += ["channels_last_3d"]
+        flags = [x.device]
+        if isinstance(x, torch.Tensor):
+          if x.is_contiguous(memory_format=torch.channels_last):
+              flags += ["channels_last"]
+          if x.is_contiguous(memory_format=torch.contiguous_format):
+              flags += ["contiguous"]
+          if x.is_contiguous(memory_format=torch.channels_last_3d):
+              flags += ["channels_last_3d"]
+        
+        return tuple([x.__class__.__name__, tuple(x.shape), x.dtype, *flags]) 
 
-        return tuple([ tuple(x.shape), x.dtype, x.device, *flags]) 
-
-    return map_tensors(x, get_info) 
+    return map_array_like(x, get_info) 
 
 def shape(x):
-    return map_tensors(x, lambda x: tuple(x.shape))
-
+    return map_array_like(x, lambda x: tuple(x.shape))
 
 def from_numpy(data):
     return map_type(data, np.ndarray, torch.Tensor.from_numpy)  
