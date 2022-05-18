@@ -57,8 +57,8 @@ class Indexed():
 
 class Struct(Mapping):
   def __init__(self, entries):
-    assert isinstance(entries, dict)
-    self._entries = entries
+    assert isinstance(entries, Mapping)
+    self._entries = dict(entries)
 
   @staticmethod
   def build(d):
