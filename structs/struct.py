@@ -582,22 +582,28 @@ def merge_dicts(dicts, dict_type=None):
   return dict_type(merged)
 
 
-def map_type(data, data_type, f, *args, **kwargs):
+def map_tree(data,  f, *args, **kwargs):
   def rec(x):
 
-    if isinstance(x, data_type):
-      return f(x, *args, **kwargs)
-    elif isinstance(x, str):
-      return x
+    r = f(x, *args, **kwargs)
+    if r is not None:
+      return r
     elif hasattr(x, '_map'):
       return x._map(rec)
     elif isinstance(x, Mapping):
       return x.__class__({k: rec(v) for k, v in x.items()})
-    elif isinstance(x, Sequence):
+    elif not isinstance(x, str) and isinstance(x, Sequence):
       return x.__class__(map(rec, x))      
     else:
       return x
   return rec(data)
+
+def map_type(data, data_type, f, *args, **kwargs):
+  def g(x):
+    if isinstance(x, data_type):
+      return f(x, *args, **kwargs)
+
+  return map_tree(data, g)
 
 
 def traverse_type(data, data_type, f, *args, **kwargs):
