@@ -581,6 +581,20 @@ def merge_dicts(dicts, dict_type=None):
 
   return dict_type(merged)
 
+def sum_dicts(dicts, dict_type=None):
+  assert isinstance(dicts, Iterable)
+  dict_type = dict_type or dict
+
+  merged = {}
+  for d in dicts:
+    for k, v in d.items():
+      if k in merged:
+        merged[k] += v
+      else:
+        merged[k] = v
+
+  return dict_type(merged)
+
 
 def map_tree(data,  f, *args, **kwargs):
   def rec(x):
