@@ -1,8 +1,9 @@
-from typing import List
-from collections import Counter
-from collections.abc import Mapping, Sequence, Iterable
 import numpy as np
+
+from typing import List, Dict, Callable
+from collections.abc import Mapping, Sequence, Iterable
 import dataclasses
+
 
 from numbers import Number
 import math
@@ -457,16 +458,22 @@ def concat_lists(xs):
   return list(itertools.chain.from_iterable(xs))
 
 
-def map_dict(f, d, *args, **kwargs):
+def map_dict(f:Callable, d:Dict, *args, **kwargs):
   return {k:  f(v,  *args, **kwargs) for k, v in d.items()}
 
 
 def map_list(f, xs, *args, **kwargs):
   return [f(x, *args, **kwargs) for x in xs]
 
-
 def map_none(f, x, *args, **kwargs):
   return f(x, *args, **kwargs) if x is not None else None
+
+
+def sort_dict(d, key=None, reverse=False, dict_type=None):
+  dict_type = dict_type or d.__class__
+
+  d = {k: d[k] for k in sorted(d.keys(), key=key, reverse=reverse)}
+  return dict_type(d)
 
 def apply_none(f, *args, **kwargs):
   return f(*args, **kwargs) if f is not None else None
@@ -563,6 +570,7 @@ def sum_dicts(ds):
 
 
 def partition_by(xs, f):
+  """ Multi-way partition by key """
   partitions = {}
 
   for x in xs:
@@ -570,6 +578,15 @@ def partition_by(xs, f):
     append_dict(partitions, k, v)
 
   return partitions
+
+
+def partition_list(f, xs):
+  """ Partition into two lists depending on boolean condition """
+  a, b  = [], []
+  for x in xs:
+    (a if f(x) else b).append(x)
+  return a, b
+
 
 
 def merge_dicts(dicts, dict_type=None):
