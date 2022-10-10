@@ -438,6 +438,12 @@ def filter_none(xs):
 def filter_map(f, xs):
   return filter_none(map(f, xs))
 
+def find_by(f, xs):
+  for x in xs:
+    if f(x):
+      return x
+  return None
+
 
 def pluck(k, xs, default=None):
   return [d.get(k, default) for d in xs]
