@@ -400,8 +400,9 @@ def transpose_structs(structs):
   return Struct(d)
 
 
-def transpose_lists(lists):
-  return list(zip(*lists))
+def transpose_lists(lists, list_type=None):
+  list_type = list_type or type(lists[0])
+  return [list_type(x) for x in zip(*lists)]
 
 
 def split_list(xs, sizes):
