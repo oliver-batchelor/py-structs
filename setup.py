@@ -2,11 +2,11 @@ from setuptools import find_namespace_packages, setup
 
 setup(
     name='py-structs',
-    version='1.0.4',
+    version='1.0.5',
     author='Oliver Batchelor',
     author_email='saulzar@gmail.com',
     description='Python structs and tables using dot notation',
-    url='https://github.com/saulzar/py_structs',
+    url='https://github.com/oliver_batchelor/py_structs',
     packages=find_namespace_packages(),
     classifiers=[
         'Programming Language :: Python :: 3',

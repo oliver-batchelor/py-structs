@@ -4,7 +4,7 @@ import numpy as np
 import torch
 
 from py_structs.container import map_type
-from py_structs.numpy.histogram import map_array_like
+from py_structs.numpy.util import map_array_like
 
 
 def map_tensors(data, f, *args, **kwargs):

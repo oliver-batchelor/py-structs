@@ -4,10 +4,9 @@ import dataclasses
 import itertools
 import operator
 import pprint
-from collections.abc import Iterable, Mapping, Sequence
 from functools import partial, reduce
 from .structs import Struct
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Mapping, Sequence, Iterable
 
 
 def to_dicts(s):
