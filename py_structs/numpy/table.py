@@ -7,13 +7,15 @@ import numpy as np
 from py_structs.container import transpose_structs
 from py_structs.structs import Struct
 
+from collections.abc import Mapping
+
 
 class Table(Struct):
   """ Table type representing an array of Struct,
   represented as a Struct of arrays with the same prefix shape.
   """
 
-  def __init__(self, d: dict):
+  def __init__(self, d: Mapping):
 
     assert len(d) > 0, 'empty Table'
     for (k, v) in d.items():

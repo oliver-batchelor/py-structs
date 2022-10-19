@@ -6,7 +6,8 @@ from typing import Sequence
 
 
 class ZipList():
-  """ A seqeunce type which adds by adding/dividing/multiplying in an elementwise way """
+  """ A seqeunce type which adds by adding/dividing/multiplying 
+  in an element-wise way """
 
   def __init__(self, elems:Sequence):
     self.elems = list(elems)

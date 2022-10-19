@@ -5,6 +5,7 @@ from __future__ import annotations
 import operator
 from collections.abc import Mapping
 from numbers import Number
+from immutables import Map
 
 import numpy as np
 
@@ -27,11 +28,13 @@ class Struct(Mapping):
 
   def __init__(self, entries):
     assert isinstance(entries, Mapping)
-    self._entries = dict(entries)
 
-  @staticmethod
-  def build(d):
-    return Struct(d)
+    if isinstance(entries, Struct):
+      self._entries = entries._entries
+    else:
+      self._entries = Map(entries)
+
+
 
   @staticmethod
   def create(**d):
@@ -63,7 +66,7 @@ class Struct(Mapping):
     return self._entries.values()
 
   def __getattr__(self, k):
-    if k[0] == '_':
+    if k[-1] == '_':
       return object.__getattribute__(self, k)
     elif k in self._entries:
       return self._entries[k]
@@ -90,27 +93,27 @@ class Struct(Mapping):
 
   def subset_(self, *keys):
     d = {k: self[k] for k in keys}
-    return self.build(d)
+    return Struct(d)
 
   def without_(self, *keys):
     d = {k: v for k, v in self.items() if not (k in keys)}
-    return self.build(d)
+    return Struct(d)
 
   def filter_none_(self):
-    return self.build({k: v for k, v in self.items() if v is not None})
+    return Struct({k: v for k, v in self.items() if v is not None})
 
   def filter_with_key_(self, f, *args, **kwargs):
-    return self.build({k: v for k, v in self.items() if f(k, *args, **kwargs)})
+    return Struct({k: v for k, v in self.items() if f(k, *args, **kwargs)})
 
-  def filter_map_with_key(self, f, *args, **kwargs):
-    return self.build({
+  def filter_map_with_key_(self, f, *args, **kwargs):
+    return Struct({
         k: result for k, v in self.items()
         for result in [f(k, v, *args, **kwargs)]
         if result is not None
     })
 
   def filter_map_(self, f, *args, **kwargs):
-    return self.build({
+    return Struct({
         k: result for k, v in self.items()
         for result in [f(v, *args, **kwargs)]
         if result is not None
@@ -118,11 +121,11 @@ class Struct(Mapping):
 
   def map_(self, f, *args, **kwargs):
     d = {k: f(v, *args, **kwargs) for k, v in self.items()}
-    return self.build(d)
+    return Struct(d)
 
   def map_with_key_(self, f):
     m = {k: f(k, v) for k, v in self._entries.items()}
-    return self.build(m)
+    return Struct(m)
 
   def __repr__(self):
     comma_sep = ', '.join([f'{k}={repr(v)}' for k, v in self.items()])
@@ -162,31 +165,28 @@ class Struct(Mapping):
     assert isinstance(other, Struct)
 
     r = {k: f(v, other[k]) for k, v in self.items()}
-    return self.build(r)
+    return Struct(r)
 
   def _merge(self, other:Struct):
     """
     returns a struct which is a merge of this struct and another.
     """
-
+    # pylint: disable=protected-access
     assert isinstance(other, Struct)
-    d = self._entries.copy()
-    d.update(other._entries) # pylint: disable=protected-access
+    d = self._entries.update(other._entries)
 
-    return self.build(d)
+    return Struct(d)
 
-  def _extend(self, **values):
-    d = self._entries.copy()
-    d.update(values)
 
-    return self.build(d)
+  def extend_(self, **values):
+    return Struct(self._entries.update(values))
 
   def update_(self, **values):
     for k in values:
       assert k in self,\
         f'update_: entry not found {k}, options are {list(self.keys())}'
 
-    return self._extend(**values)
+    return self.extend_(**values)
 
   def __radd__(self, other):
     return self.__add__(other)

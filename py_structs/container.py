@@ -6,7 +6,7 @@ import operator
 import pprint
 from collections.abc import Iterable, Mapping, Sequence
 from functools import partial, reduce
-from struct import Struct
+from .structs import Struct
 from typing import Any, Callable, Dict
 
 
@@ -78,9 +78,9 @@ def replace(d: Mapping, key: Any, value: Any):
 
 def over_struct(key, f):
 
-  def modify(d):
+  def modify(d:Struct):
     value = f(d[key])
-    return Struct(replace(d, key, value))
+    return d.extend_(**{key: value})
 
   return modify
 
@@ -94,7 +94,7 @@ def over(key, f):
   return modify
 
 
-def transpose_partial(dicts):
+def transpose_partial(dicts:Sequence[Mapping]) -> Dict:
   accum = {}
   for d in dicts:
     for k, v in d.items():
@@ -105,8 +105,8 @@ def transpose_partial(dicts):
   return accum
 
 
-def transpose_partial_structs(structs):
-  return Struct(transpose_partial(d.__dict__ for d in structs))
+def transpose_partial_structs(structs:Sequence[Struct]) -> Struct:
+  return Struct(transpose_partial(d.mapping() for d in structs))
 
 
 def transpose_structs(structs):
@@ -234,26 +234,29 @@ def append_dict(d, k, v):
 
 def transpose_dicts(d, dict_type=None):
   dict_type = dict_type or d.__class__
-  r = dict_type({})
+  r = {}
 
   for k, v in d.items():
     for j, u in v.items():
-      inner = r.get(j) or d.__class__({})
+      inner = r.get(j) or {}
       inner[k] = u
       r[j] = inner
-  return r
+
+  r = {k:dict_type(d) for k, d in r.items()}
+  return dict_type(r)
 
 
 def transpose_dict_lists(d, dict_type=None):
   dict_type = dict_type or d.__class__
 
   n = max(len(v) for v in d.values())
-  r = [dict_type({}) for _ in range(n)]
+  r = [{} for _ in range(n)]
 
   for k, v in d.items():
     for j, u in enumerate(v):
       r[j][k] = u
-  return r
+  
+  return [dict_type(d) for d in r]
 
 
 def transpose_list_dicts(xs, dict_type=None):
@@ -262,13 +265,13 @@ def transpose_list_dicts(xs, dict_type=None):
 
   dict_type = dict_type or xs[0].__class__
 
-  r = dict_type({})
+  r = {}
   for d in xs:
     for k, v in d.items():
       inner = r.get(k) or []
       inner.append(v)
       r[k] = inner
-  return r
+  return dict_type(r)
 
 
 def choose(*options):
@@ -295,8 +298,10 @@ def count_dict(xs):
   return counts
 
 
-def sum_dicts(dicts, dict_type=None):
+def sum_dicts(dicts:Iterable[Mapping], dict_type=None):
   assert isinstance(dicts, Iterable)
+  assert len(dicts) > 0
+
   dict_type = dict_type or dict
 
   merged = {}
@@ -331,7 +336,9 @@ def partition_list(f, xs):
 
 def merge_dicts(dicts, dict_type=None):
   assert isinstance(dicts, Iterable)
-  dict_type = dict_type or dict
+  assert len(dicts) > 0
+
+  dict_type = dict_type or dicts[0].__class__
 
   merged = {}
   for d in dicts:
