@@ -167,7 +167,7 @@ class Struct(Mapping):
     r = {k: f(v, other[k]) for k, v in self.items()}
     return Struct(r)
 
-  def _merge(self, other:Struct):
+  def merge_(self, other:Struct):
     """
     returns a struct which is a merge of this struct and another.
     """
