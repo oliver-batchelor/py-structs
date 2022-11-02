@@ -21,7 +21,7 @@ class Histogram:
     lower, upper = self.range
 
     bin_indexes = (values - lower) * num_bins / (upper - lower)
-    bin_indexes = bin_indexes.long()
+    bin_indexes = bin_indexes.astype(np.int32)
 
     if trim:
       valid = (bin_indexes >= 0) & (bin_indexes < num_bins)
@@ -29,20 +29,29 @@ class Histogram:
       values = values[valid]
       bin_indexes = bin_indexes[valid]
 
-    bin_indexes.clamp_(0, num_bins - 1)
+    bin_indexes.clip(0, num_bins - 1)
 
     self.sum = values.sum().item()
-    self.sum_squares = values.norm(2).item()
+    self.sum_squares = np.linalg.norm(values).item()
     self.counts = np.bincount(bin_indexes, minlength=num_bins)
 
   def __repr__(self):
     return self.counts.tolist().__repr__()
+
+  @property
+  def normalised(self):
+    return self.counts / self.counts.sum()
+     
 
   def bins(self):
     lower, upper = self.range
     d = (upper - lower) / self.counts.shape[0]
 
     return np.array([lower + i * d for i in range(0, self.counts.shape[0] + 1)])
+
+  def to_json(self):
+    return dict(range = self.range, counts=self.counts.tolist())
+
 
   def to_struct(self):
     return struct(sum=self.sum,
@@ -52,8 +61,8 @@ class Histogram:
 
   def __add__(self, other):
     assert isinstance(other, Histogram)
-    assert other.counts.size(0) == self.counts.size(
-        0) and (other.range == self.range), 'mismatched histogram sizes'
+    assert other.counts.shape == self.counts.shape\
+       and (other.range == self.range), 'mismatched histogram sizes'
 
     total = Histogram(range=self.range, num_bins=self.counts.shape[0])
     total.sum = self.sum + other.sum
