@@ -9,6 +9,7 @@ from .structs import Struct
 from typing import Any, Callable, Dict, Mapping, Sequence, Iterable
 
 
+
 def to_dicts(s):
   if isinstance(s, str):
     return s
@@ -355,6 +356,8 @@ def map_tree(data, f, *args, **kwargs):
       return r
     elif hasattr(x, 'map_'):
       return x.map_(rec)
+    elif dataclasses.is_dataclass(x):
+      return dataclasses.replace(x, **{k: rec(v) for k, v in dataclasses.asdict(x).items()})
     elif isinstance(x, Mapping):
       return x.__class__({k: rec(v) for k, v in x.items()})
     elif not isinstance(x, str) and isinstance(x, Sequence):
